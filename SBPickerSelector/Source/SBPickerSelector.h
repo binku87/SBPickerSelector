@@ -43,12 +43,12 @@ typedef NS_ENUM(NSInteger, SBPickerSelectorDateType) {
 
 @interface SBPickerSelector : UIViewController <UIPickerViewDataSource, UIPickerViewDelegate>
 {
-	
+
 	UIViewController *parent_;
-	
+
 	UIPopoverController *popOver_;
 	CGPoint origin_;
-	
+
 }
 
 @property (strong, nonatomic) IBOutlet UIPickerView *pickerView;
@@ -80,6 +80,6 @@ typedef NS_ENUM(NSInteger, SBPickerSelectorDateType) {
 - (void) showPickerIpadFromRect:(CGRect)rect inView:(UIView *)view;
 - (void) showPickerOver:(UIViewController *)parent;
 - (void) setMaximumDateAllowed: (NSDate*)allowedDate;
-
+- (void) dismissPicker;
 
 @end
