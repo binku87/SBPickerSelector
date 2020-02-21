@@ -47,31 +47,31 @@
 }
 
 - (void) showPickerOver:(UIViewController *)parent{
-	
-	
+
+
 	UIWindow * window = [[UIApplication sharedApplication] keyWindow];
-	
-	
+
+
 	self.background = [[UIView alloc] initWithFrame:window.bounds];
 	[self.background setBackgroundColor:[[UIColor blackColor] colorWithAlphaComponent:0.0]];
 	[window addSubview:self.background];
 	[window addSubview:self.view];
 	[parent addChildViewController:self];
-	
-	
+
+
 	UIInterfaceOrientation orientation = [UIApplication sharedApplication].statusBarOrientation;
-	
+
 	__block CGRect frame = self.view.frame;
 	float rotateAngle = 0;
 	CGSize screenSize = CGSizeMake(window.frame.size.width, [self pickerSize].height);
 	origin_ = CGPointMake(0,CGRectGetMaxY(window.bounds));
 	CGPoint target = CGPointMake(0,origin_.y - CGRectGetHeight(frame));
-	
-	
+
+
 	if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
 			//only accept orientation in iphone
 		if ([[UIDevice currentDevice] userInterfaceIdiom] != UIUserInterfaceIdiomPad) {
-			
+
 			switch (orientation) {
 				case UIInterfaceOrientationPortraitUpsideDown:
 					rotateAngle = M_PI;
@@ -94,25 +94,25 @@
 			}
 		}
 	}
-	
-	
+
+
 	self.view.transform = CGAffineTransformMakeRotation(rotateAngle);
 	frame = self.view.frame;
 	frame.size = screenSize;
 	frame.origin = origin_;
 	self.view.frame = frame;
-	
-	
+
+
 	[UIView animateWithDuration:0.3 animations:^{
 		self.background.backgroundColor = [self.background.backgroundColor colorWithAlphaComponent:0.5];
 		frame = self.view.frame;
 		frame.origin = target;
 		self.view.frame = frame;
-		
+
 	}];
-	
+
 	[self.pickerView reloadAllComponents];
-	
+
 		//only accept orientation in iphone
 	if ([[UIDevice currentDevice] userInterfaceIdiom] != UIUserInterfaceIdiomPad) {
 		[[NSNotificationCenter defaultCenter] addObserver:self
@@ -120,48 +120,48 @@
 													 name:UIApplicationDidChangeStatusBarOrientationNotification
 												   object:nil];
 	}
-	
-	
+
+
 }
 
 - (void) positionPicker:(NSNotification*)notification{
-	
+
 	double animationDuration = 0;
-	
+
 	UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
 	CGRect orientationFrame = [UIScreen mainScreen].bounds;
-	
-	
+
+
 	if(notification != nil) {
 		NSDictionary* keyboardInfo = [notification userInfo];
 		animationDuration = [[keyboardInfo valueForKey:UIKeyboardAnimationDurationUserInfoKey] doubleValue];
 	}
-	
-	
+
+
 	if(UIInterfaceOrientationIsLandscape(orientation)) {
 		float temp = orientationFrame.size.width;
 		orientationFrame.size.width = orientationFrame.size.height;
 		orientationFrame.size.height = temp;
 	}
-	
+
 	UIWindow * window = [[UIApplication sharedApplication] keyWindow];
-	
+
 	CGFloat rotateAngle = 0;
 	__block CGRect frame = self.view.frame;
 	frame.size = [self pickerSize];
 	CGSize screenSize = CGSizeMake(window.frame.size.width, [self pickerSize].height);
 	origin_ = CGPointMake(0,CGRectGetMaxY(window.bounds));
 	CGPoint target = CGPointMake(0,origin_.y - CGRectGetHeight(frame));
-	
-	
+
+
 	switch (orientation) {
 		case UIInterfaceOrientationPortraitUpsideDown:
 			rotateAngle = M_PI;
 			break;
 		case UIInterfaceOrientationLandscapeLeft:
-			
+
 			rotateAngle = -M_PI/2.0f;
-			
+
 			if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
 				screenSize = CGSizeMake(screenSize.height, window.frame.size.height);
 				origin_ = CGPointMake(CGRectGetMaxX(window.bounds),0);
@@ -169,11 +169,11 @@
 			}else{
 				target = CGPointMake(0,origin_.y - CGRectGetHeight(frame));
 			}
-			
+
 			break;
 		case UIInterfaceOrientationLandscapeRight:
 			rotateAngle = M_PI/2.0f;
-			
+
 			if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
 				screenSize = CGSizeMake(screenSize.height,window.frame.size.height);
 				origin_ = CGPointMake(-CGRectGetHeight(frame),0);
@@ -186,10 +186,10 @@
 			rotateAngle = 0.0;
 			break;
 	}
-	
-	
+
+
 	[UIView animateWithDuration:animationDuration delay:0 options:UIViewAnimationOptionAllowUserInteraction animations:^{
-		
+
 		if (SYSTEM_VERSION_LESS_THAN(@"8.0")) {
 			self.view.transform = CGAffineTransformMakeRotation(rotateAngle);
 			frame.origin = target;
@@ -202,12 +202,12 @@
 			self.background.frame = window.frame;
 		}
 	} completion:NULL];
-	
-	
+
+
 }
 
 - (void) showPickerIpadFromRect:(CGRect)rect inView:(UIView *)view{
-	
+
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
 		popOver_ = [[UIPopoverController alloc] initWithContentViewController:self];
 		[popOver_ setPopoverContentSize:self.view.frame.size];
@@ -215,7 +215,7 @@
 	}else{
 		[self showPickerOver:(UIViewController *)[self traverseResponderChainForUIViewController:view]];
 	}
-	
+
 }
 
 - (id) traverseResponderChainForUIViewController:(UIView *)view {
@@ -232,41 +232,41 @@
 
 - (void) setPickerType:(SBPickerSelectorType)pickerType{
 	_pickerType = pickerType;
-	
+
 	CGRect frame = self.view.frame;
-	
+
 	if (pickerType == SBPickerSelectorTypeDate) {
 		[self.pickerView removeFromSuperview];
 		[self.view addSubview:self.datePickerView];
-		
-		
+
+
 		frame.size.height = CGRectGetHeight(self.optionsToolBar.frame) + CGRectGetHeight(self.datePickerView.frame);
 		self.view.frame = frame;
-		
+
 		frame = self.datePickerView.frame;
 		frame.origin.y = CGRectGetMaxY(self.optionsToolBar.frame);
 		self.datePickerView.frame = frame;
-		
+
 	}else{
 		[self.datePickerView removeFromSuperview];
 		[self.view addSubview:self.pickerView];
-		
+
 		frame = self.pickerView.frame;
 		frame.origin.y = CGRectGetMaxY(self.optionsToolBar.frame);
 		self.pickerView.frame = frame;
-		
+
 	}
 }
 
 - (void) setMaximumDateAllowed: (NSDate*)allowedDate {
-    
+
     self.datePickerView.maximumDate = allowedDate;
-    
+
 }
 
 -(CGSize) pickerSize{
 	CGSize size = self.view.frame.size;
-	
+
 	if (_pickerType == SBPickerSelectorTypeDate) {
 		size.height = CGRectGetHeight(self.optionsToolBar.frame) + CGRectGetHeight(self.datePickerView.frame);
 		size.width = CGRectGetWidth(self.datePickerView.frame);
@@ -274,9 +274,9 @@
 		size.height = CGRectGetHeight(self.optionsToolBar.frame) + CGRectGetHeight(self.pickerView.frame);
 		size.width = CGRectGetWidth(self.pickerView.frame);
 	}
-	
-	
-	
+
+
+
 	return size;
 }
 
@@ -292,7 +292,7 @@
 
 - (void) setDatePickerType:(SBPickerSelectorDateType)datePickerType{
 	_datePickerType = datePickerType;
-	
+
 	switch (datePickerType) {
 		case SBPickerSelectorDateTypeDefault:
 			self.datePickerView.datePickerMode = UIDatePickerModeDateAndTime;
@@ -312,24 +312,24 @@
 }
 
 -(void) setOnlyMonthAndYearPicker{
-	
+
 	self.dateOnlyMonthYearPickerView = [SBDatePickerViewMonthYear new];
-//	[self.dateOnlyMonthYearPickerView selectToday]; 
-	
+//	[self.dateOnlyMonthYearPickerView selectToday];
+
 	[self.datePickerView removeFromSuperview];
 	[self.pickerView removeFromSuperview];
 	[self.view addSubview:self.dateOnlyMonthYearPickerView];
-	
+
 	CGRect frame = self.view.frame;
 	frame.size.height = CGRectGetHeight(self.optionsToolBar.frame) + CGRectGetHeight(self.pickerView.frame);
 	self.view.frame = frame;
-	
+
 	frame = self.dateOnlyMonthYearPickerView.frame;
 	frame.origin.y = CGRectGetMaxY(self.optionsToolBar.frame);
 	frame.size.height = CGRectGetHeight(self.pickerView.frame);
 	self.dateOnlyMonthYearPickerView.frame = frame;
-	
-	
+
+
 }
 
 
@@ -368,7 +368,7 @@
 
 - (IBAction)setAction:(id)sender {
 	if (self.pickerType == SBPickerSelectorTypeDate) {
-	
+
 		if (_datePickerType == SBPickerSelectorDateTypeOnlyMonthAndYear){
 			if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:dateSelected:)]) {
 				[self.delegate pickerSelector:self dateSelected:[self.dateOnlyMonthYearPickerView date]];
@@ -376,63 +376,63 @@
 			[self dismissPicker];
 			return;
 		}
-		
+
 		if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:dateSelected:)]) {
 			[self.delegate pickerSelector:self dateSelected:self.datePickerView.date];
 		}
-        
+
 		[self dismissPicker];
 		return;
 	}
-	
+
     if (self.delegate && self.pickerData.count > 0) {
-        
+
         NSMutableArray *values = [NSMutableArray new];
         NSMutableArray *indexes = [NSMutableArray new];
-        
+
 		NSMutableString *str = [NSMutableString stringWithString:@""];
 		for (int i = 0; i < self.numberOfComponents; i++) {
 			if (self.numberOfComponents == 1) {
                 int rowSelected = [self.pickerView selectedRowInComponent:i];
-                
+
 				[str appendString:self.pickerData[rowSelected]];
-                
+
                 [values addObject:self.pickerData[rowSelected]];
                 [indexes addObject:[NSNumber numberWithInt:rowSelected]];
-                
+
 			}else{
-                
+
                 int rowSelected = [self.pickerView selectedRowInComponent:i];
-                
+
                 NSMutableArray *componentData = self.pickerData[i];
                 [str appendString:componentData[rowSelected]];
                 if (i<self.numberOfComponents-1) {
                     [str appendString:@" "];
                 }
-                
+
                 [values addObject:componentData[rowSelected]];
                 [indexes addObject:[NSNumber numberWithInt:rowSelected]];
-                
+
 			}
 		}
-		
+
 		//deprecated
 		if ([self.delegate respondsToSelector:@selector(pickerSelector:selectedValue:index:)]) {
 			[self.delegate pickerSelector:self selectedValue:str index:[self.pickerView selectedRowInComponent:0]];
 		}
-		
+
         if ([self.delegate respondsToSelector:@selector(pickerSelector:selectedValues:atIndexes:)]) {
             [self.delegate pickerSelector:self selectedValues:values atIndexes:indexes];
         }
-        
+
 	}
-	
+
 	[self dismissPicker];
 }
 
 
 - (IBAction)cancelAction:(id)sender {
-	
+
 	if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:cancelPicker:)]) {
 		[self.delegate pickerSelector:self cancelPicker:YES];
 	}
@@ -440,24 +440,24 @@
 }
 
 - (void) dismissPicker{
-	
+
 	if (popOver_) {
 		[popOver_ dismissPopoverAnimated:YES];
 		return;
 	}
-	
+
 	[UIView animateWithDuration:0.3 animations:^{
 		self.background.backgroundColor = [self.background.backgroundColor colorWithAlphaComponent:0];
 		CGRect frame = self.view.frame;
 		frame.origin = origin_;
 		self.view.frame = frame;
-		
+
 	} completion:^(BOOL finished) {
 		[self.background removeFromSuperview];
 		[self.view removeFromSuperview];
 		[self removeFromParentViewController];
 	}];
-	
+
 }
 
 
@@ -490,54 +490,54 @@
 		if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:intermediatelySelectedValue:atIndex:)]) {
 			[self.delegate pickerSelector:self intermediatelySelectedValue:self.datePickerView.date atIndex:0];
 		}
-		
+
         if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:intermediatelySelectedValues:atIndexes:)]) {
-            [self.delegate pickerSelector:self intermediatelySelectedValues:@[self.datePickerView.date] atIndexes:@[(NSNumber *)0]];
+            [self.delegate pickerSelector:self intermediatelySelectedValues:@[self.datePickerView.date] atIndexes:@[[NSNumber numberWithInt:0]]];
         }
-        
+
 		return;
 	}
-	
+
     if (self.delegate && self.pickerData.count > 0) {
-        
+
         NSMutableArray *values = [NSMutableArray new];
         NSMutableArray *indexes = [NSMutableArray new];
-        
+
 		NSMutableString *str = [NSMutableString stringWithString:@""];
 		for (int i = 0; i < self.numberOfComponents; i++) {
 			if (self.numberOfComponents == 1) {
-                
+
                 [values addObject:self.pickerData[[self.pickerView selectedRowInComponent:0]]];
-                [indexes addObject:(NSNumber *)0];
-                
+                [indexes addObject:[NSNumber numberWithInt:0]];
+
 				[str appendString:self.pickerData[[self.pickerView selectedRowInComponent:0]]];
 			}else{
-                
+
                 int rowSelected = [self.pickerView selectedRowInComponent:i];
-                
+
 				NSMutableArray *componentData = self.pickerData[i];
 				[str appendString:componentData[rowSelected]];
 				if (i<self.numberOfComponents-1) {
 					[str appendString:@" "];
 				}
-                
-                
+
+
                 [values addObject:componentData[rowSelected]];
                 [indexes addObject:[NSNumber numberWithInt:rowSelected]];
-                
+
 			}
 		}
-		
+
         //deprecated
 		if ([self.delegate respondsToSelector:@selector(pickerSelector:intermediatelySelectedValue:atIndex:)]) {
 			[self.delegate pickerSelector:self intermediatelySelectedValue:str atIndex:[self.pickerView selectedRowInComponent:0]];
 		}
-        
+
         if (self.delegate && [self.delegate respondsToSelector:@selector(pickerSelector:intermediatelySelectedValues:atIndexes:)]) {
             [self.delegate pickerSelector:self intermediatelySelectedValues:values atIndexes:indexes];
         }
-		
-		
+
+
 	}
 }
 
@@ -586,7 +586,7 @@ const NSInteger numberOfComponents = 2;
 -(void)awakeFromNib
 {
 	[super awakeFromNib];
-	
+
 	[self loadDefaultsParameters];
 }
 
@@ -597,10 +597,10 @@ const NSInteger numberOfComponents = 2;
 {
 	NSInteger monthCount = self.months.count;
 	NSString *month = [self.months objectAtIndex:([self selectedRowInComponent:MONTH] % monthCount)];
-	
+
 	NSInteger yearCount = self.years.count;
 	NSString *year = [self.years objectAtIndex:([self selectedRowInComponent:YEAR] % yearCount)];
-	
+
 	NSDateFormatter *formatter = [NSDateFormatter new];
 	[formatter setDateFormat:@"MMMM:yyyy"];
 	[formatter setLocale:[[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"]];
@@ -611,7 +611,7 @@ const NSInteger numberOfComponents = 2;
 - (void)setupMinYear:(NSInteger)minYear maxYear:(NSInteger)maxYear
 {
 	self.minYear = minYear;
-	
+
 	if (maxYear > minYear)
 	{
 		self.maxYear = maxYear;
@@ -620,7 +620,7 @@ const NSInteger numberOfComponents = 2;
 	{
 		self.maxYear = minYear + 10;
 	}
-	
+
 	self.years = [self nameOfYears];
 	self.todayIndexPath = [self todayPath];
 }
@@ -630,7 +630,7 @@ const NSInteger numberOfComponents = 2;
 	[self selectRow: self.todayIndexPath.row
 		inComponent: MONTH
 		   animated: NO];
-	
+
 	[self selectRow: self.todayIndexPath.section
 		inComponent: YEAR
 		   animated: NO];
@@ -666,7 +666,7 @@ const NSInteger numberOfComponents = 2;
 			selected = YES;
 		}
 	}
-	
+
 	UILabel *returnView = nil;
 	if(view.tag == LABEL_TAG)
 	{
@@ -676,7 +676,7 @@ const NSInteger numberOfComponents = 2;
 	{
 		returnView = [self labelForComponent:component];
 	}
-	
+
 	returnView.text = [self titleForRow:row forComponent:component];
 	return returnView;
 }
@@ -727,21 +727,21 @@ const NSInteger numberOfComponents = 2;
 		return [self.months objectAtIndex:(row % monthCount)];
 	}
 	NSInteger yearCount = self.years.count;
-	
+
 	return [self.years objectAtIndex:(row % yearCount)];
 }
 
 -(UILabel *)labelForComponent:(NSInteger)component
 {
 	CGRect frame = CGRectMake(0, 0, [self componentWidth], 44);
-	
+
 	UILabel *label = [[UILabel alloc] initWithFrame:frame];
 	label.textAlignment = NSTextAlignmentCenter;
 	label.backgroundColor = [UIColor clearColor];
 	label.userInteractionEnabled = NO;
-	
+
 	label.tag = LABEL_TAG;
-	
+
 	return label;
 }
 
@@ -753,7 +753,7 @@ const NSInteger numberOfComponents = 2;
 -(NSArray *)nameOfYears
 {
 	NSMutableArray *years = [NSMutableArray array];
-	
+
 	for(NSInteger year = self.minYear; year <= self.maxYear; year++)
 	{
 		NSString *yearStr = [NSString stringWithFormat:@"%li", (long)year];
@@ -766,10 +766,10 @@ const NSInteger numberOfComponents = 2;
 {
 	CGFloat row = 0.f;
 	CGFloat section = 0.f;
-	
+
 	NSString *month = [self currentMonthName];
 	NSString *year  = [self currentYearName];
-	
+
 		//set table on the middle
 	for(NSString *cellMonth in self.months)
 	{
@@ -780,7 +780,7 @@ const NSInteger numberOfComponents = 2;
 			break;
 		}
 	}
-	
+
 	for(NSString *cellYear in self.years)
 	{
 		if([cellYear isEqualToString:year])
@@ -790,7 +790,7 @@ const NSInteger numberOfComponents = 2;
 			break;
 		}
 	}
-	
+
 	return [NSIndexPath indexPathForRow:row inSection:section];
 }
 
@@ -815,14 +815,14 @@ const NSInteger numberOfComponents = 2;
 {
 	self.minYear = 2014;
 	self.maxYear = 2030;
-	
+
 	self.months = [self nameOfMonths];
 	self.years = [self nameOfYears];
 	self.todayIndexPath = [self todayPath];
-	
+
 	self.delegate = self;
 	self.dataSource = self;
-	
+
 }
 
 @end
